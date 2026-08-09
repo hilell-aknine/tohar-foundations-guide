@@ -26,12 +26,12 @@ GUIDE.foundations.forEach((f, i) => {
   STEPS.push({ type:'story', f:i });
   STEPS.push({ type:'work',  f:i });
 });
-STEPS.push({ type:'recap' }, { type:'diagnostic' }, { type:'closing' });
+STEPS.push({ type:'recap' }, { type:'quickcheck' }, { type:'diagnostic' }, { type:'closing' });
 
 const LAST = STEPS.length - 1;
 
 /* ══════════════ STATE ══════════════ */
-let state = { answers:{}, scores:[null,null,null,null,null], step:0, sid:null };
+let state = { answers:{}, scores:[null,null,null,null,null], quick:{}, step:0, sid:null };
 let cur = 0;
 
 function newSid(){
@@ -45,6 +45,7 @@ function load(){
       const d = JSON.parse(raw);
       if (d && typeof d === 'object'){
         state.answers = d.answers || {};
+        state.quick = d.quick || {};
         if (Array.isArray(d.scores) && d.scores.length === 5) state.scores = d.scores;
         if (Number.isInteger(d.step)) state.step = Math.min(Math.max(d.step, 0), LAST);
         state.sid = d.sid || null;
@@ -178,14 +179,33 @@ function renderStep(s, idx){
           ${GUIDE.foundations.map(x => `<div class="pillar"><i>${x.n}</i><div><b>${esc(x.short)}</b><span>${esc(x.question)}</span></div></div>`).join('')}
         </div>`;
 
+    case 'quickcheck':
+      return `${crumb('?','אבחון קצר')}
+        <h2>עוד שלוש שאלות</h2>
+        <p class="lede">נגיעה אחת בכל שאלה. הן מחדדות את ההמלצה שתקבלי בעמוד הבא.</p>
+        ${QUICKCHECK.map(q => `
+          <div class="qc" data-k="${q.k}">
+            <div class="qc__q">${esc(q.q)}</div>
+            <div class="qc__opts">
+              ${q.opts.map(o => `<button type="button" class="qc__opt" data-v="${o.v}">
+                <b>${esc(o.t)}</b><span>${esc(o.hint)}</span>
+              </button>`).join('')}
+            </div>
+          </div>`).join('')}
+        <p class="qc__note">אפשר גם לדלג. האבחון יעבוד גם בלי זה, פשוט פחות מדויק.</p>`;
+
     case 'diagnostic':
       return `<h2>האבחון שלך</h2>
         <p class="lede">לפי הציונים שנתת לעצמך לאורך המסע. זה המקום שבו כדאי להתחיל.</p>
         <div class="chart" id="chart"></div>
         <div class="verdict" id="verdict"></div>
+        <div id="reco"></div>
         <div class="actions">
-          <button class="btn btn--primary btn--block" id="btnPrint">שמירת המדריך שלי כ־PDF</button>
-          <a class="btn btn--wa btn--block" id="btnWa" href="#" target="_blank" rel="noopener">לשלוח את התוצאה לטוהר</a>
+          <a class="btn btn--wa btn--block" id="btnMeet" href="#" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.7 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5 0-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5 4.5.7.3 1.2.5 1.7.6.7.2 1.3.2 1.8.1.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.2-.3-.2-.5-.4M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Z"/></svg>
+            לקבוע שיחה עם טוהר
+          </a>
+          <button class="btn btn--ghost btn--block" id="btnPrint">שמירת המדריך שלי כ־PDF</button>
           <button class="btn btn--ghost btn--block" id="btnReset">להתחיל מחדש</button>
         </div>
         <div class="saved">
@@ -215,6 +235,22 @@ function build(){
     .join('');
   wireAnswers();
   wireScores();
+  wireQuick();
+}
+
+function wireQuick(){
+  $$('.qc').forEach(box => {
+    const k = box.dataset.k;
+    $$('.qc__opt', box).forEach(btn => {
+      btn.classList.toggle('on', state.quick[k] === btn.dataset.v);
+      btn.addEventListener('click', () => {
+        // נגיעה שנייה על אותה בחירה מבטלת אותה
+        state.quick[k] = state.quick[k] === btn.dataset.v ? null : btn.dataset.v;
+        $$('.qc__opt', box).forEach(b => b.classList.toggle('on', state.quick[k] === b.dataset.v));
+        save(); renderReco();
+      });
+    });
+  });
 }
 
 function wireAnswers(){
@@ -240,7 +276,7 @@ function wireScores(){
     r.addEventListener('input', () => {
       state.scores[i] = +r.value;
       $(`[data-out="${i}"]`).textContent = r.value;
-      paintRange(r); save(); renderDiagnostic();
+      paintRange(r); save(); renderDiagnostic(); renderReco();
     });
   });
 }
@@ -264,6 +300,7 @@ function go(i, opts){
   else if (s.type === 'intro')   where = 'הקדמה';
   else if (f)                    where = `יסוד <b>${f.n}</b> מתוך 5 · <b>${esc(f.short)}</b>`;
   else if (s.type === 'recap')   where = 'חיבור';
+  else if (s.type === 'quickcheck') where = 'אבחון קצר';
   else if (s.type === 'diagnostic') where = 'האבחון שלך';
   else                           where = 'לסיום';
   $('#where').innerHTML = where;
@@ -276,8 +313,11 @@ function go(i, opts){
   if (i === LAST){ next.disabled = true; next.textContent = 'סיימת 🤍'; }
   else {
     next.disabled = false;
+    const nx = STEPS[i + 1].type;
     next.textContent = i === 0 ? 'בואי נתחיל'
-                     : (STEPS[i + 1].type === 'diagnostic' ? 'לאבחון שלי' : 'הבא');
+                     : nx === 'quickcheck' ? 'עוד שלוש שאלות'
+                     : nx === 'diagnostic' ? 'לאבחון שלי'
+                     : 'הבא';
   }
 
   // teacher context refresh
@@ -289,7 +329,7 @@ function go(i, opts){
   else if (!opts.keep) history.replaceState({ i }, '', '#' + i);
 
   if (!opts.silent) window.scrollTo({ top:0, behavior: prev === i ? 'auto' : 'smooth' });
-  if (s.type === 'diagnostic') renderDiagnostic();
+  if (s.type === 'diagnostic'){ renderDiagnostic(); renderReco(); }
   save();
 }
 
@@ -344,6 +384,71 @@ function renderDiagnostic(){
     <div class="verdict__body">${esc(f.rx)}<br><br><strong>ממוצע היסודות שלך: <bdi>${avg} / 10</bdi></strong></div>`;
 }
 
+/* ── ההמלצה האישית של טוהר ── */
+function profile(){
+  const filled = state.scores.filter(x => x != null);
+  if (filled.length < 5) return null;
+  const min = Math.min(...filled), max = Math.max(...filled);
+  const idx = state.scores.indexOf(min);
+  const avg = filled.reduce((a,b) => a+b, 0) / 5;
+  return {
+    idx, min, max, avg,
+    f: GUIDE.foundations[idx],
+    band: avg <= 4.5 ? 'low' : (avg >= 7.5 ? 'high' : 'mid'),
+    lopsided: (max - min) >= 4
+  };
+}
+
+function renderReco(){
+  const box = $('#reco');
+  if (!box) return;
+  const p = profile();
+  if (!p){ box.innerHTML = ''; return; }
+
+  const bits = [];
+  bits.push(RECO_OPENER[p.band]);
+  if (p.lopsided){
+    bits.push(`יש לך פער גדול בין היסודות. <strong>${esc(p.f.short)}</strong> מושך למטה את כל השאר, כי היסודות לא עובדים בנפרד אלא כמערכת.`);
+  }
+  if (state.quick.pain && RECO_PAIN[state.quick.pain]) bits.push(RECO_PAIN[state.quick.pain]);
+  bits.push(`<strong>הצעד הראשון שלך:</strong> ${esc(p.f.rx)}`);
+  if (state.quick.need && RECO_NEED[state.quick.need]) bits.push(RECO_NEED[state.quick.need]);
+
+  box.innerHTML = `<div class="reco">
+    <div class="reco__head">
+      <img src="assets/tohar-avatar.jpg" alt="טוהר אקנין">
+      <div><div class="reco__name">ההמלצה האישית שלי אלייך</div><div class="reco__role">טוהר · תהליכי שיווק</div></div>
+    </div>
+    ${bits.map(b => `<p>${b}</p>`).join('')}
+    <div class="reco__cta">
+      <p>הדבר הזה נסגר הכי מהר בשיחה. בפגישת אבחון קצרה נעבור יחד על <strong>${esc(p.f.short)}</strong> בעסק שלך ספציפית, ותצאי עם צעד ברור לשבוע הקרוב.</p>
+    </div>
+  </div>`;
+}
+
+/* ── הודעת קביעת פגישה ── */
+function buildMeetingWa(){
+  const p = profile();
+  const L = ['היי טוהר, סיימתי את מודל היסודות השיווקיים ואשמח לקבוע איתך שיחת אבחון.', ''];
+  if (p){
+    L.push('התמונה שיצאה לי:');
+    GUIDE.foundations.forEach((f, i) => L.push('• ' + f.short + ': ' + state.scores[i] + '/10'));
+    L.push('', 'ממוצע: ' + p.avg.toFixed(1) + '/10', 'היסוד הכי חלש שלי: ' + p.f.short);
+  } else {
+    L.push('עוד לא דירגתי את כל היסודות, אבל אשמח לדבר.');
+  }
+  const Q = QUICKCHECK.reduce((m,q) => (m[q.k]=q, m), {});
+  const label = (k) => {
+    const v = state.quick[k]; if (!v) return null;
+    const o = Q[k].opts.find(x => x.v === v); return o ? o.t : null;
+  };
+  const extra = [['stage','העסק שלי'], ['pain','מה הכי מתסכל'], ['need','מה יעזור לי']]
+    .map(([k,t]) => { const l = label(k); return l ? `${t}: ${l}` : null; }).filter(Boolean);
+  if (extra.length){ L.push('', ...extra); }
+  L.push('', 'מתי נוח לך?');
+  return 'https://wa.me/' + CFG.WA_TOHAR + '?text=' + encodeURIComponent(L.join('\n'));
+}
+
 function buildWa(){
   const answered = state.scores.filter(x => x != null).length;
   const L = ['היי טוהר, סיימתי את מודל היסודות השיווקיים.', ''];
@@ -380,8 +485,13 @@ function stepContext(){
       if (state.scores[s.f] != null) ctx.herScore = state.scores[s.f];
     }
   }
-  if (s.type === 'diagnostic' || s.type === 'closing'){
+  if (s.type === 'diagnostic' || s.type === 'closing' || s.type === 'quickcheck'){
     ctx.allScores = GUIDE.foundations.map((f2, i) => ({ name:f2.short, score:state.scores[i] }));
+    const Q = QUICKCHECK.reduce((m,q) => (m[q.k]=q, m), {});
+    ctx.quickCheck = Object.entries(state.quick).filter(([,v]) => v).map(([k,v]) => {
+      const o = Q[k] && Q[k].opts.find(x => x.v === v);
+      return o ? { question: Q[k].q, answer: o.t } : null;
+    }).filter(Boolean);
   }
   return ctx;
 }
@@ -477,7 +587,8 @@ function syncUp(){
       sid: state.sid,
       step: cur,
       scores: state.scores,
-      answers: state.answers
+      answers: state.answers,
+      quick: state.quick
     };
     fetch(CFG.SUPABASE_URL + '/functions/v1/guide-progress', {
       method:'POST',
@@ -562,17 +673,19 @@ document.addEventListener('click', e => {
     $$('textarea[data-k]').forEach(autosize);
     setTimeout(() => window.print(), 120);
   }
-  if (e.target.closest('#btnWa')) e.target.closest('#btnWa').href = buildWa();
+  if (e.target.closest('#btnWa'))   e.target.closest('#btnWa').href   = buildWa();
+  if (e.target.closest('#btnMeet')) e.target.closest('#btnMeet').href = buildMeetingWa();
   if (e.target.closest('#btnReset')){
     if (!confirm('למחוק את כל התשובות והציונים ולהתחיל מחדש?')) return;
     try { localStorage.removeItem(CFG.STORE); } catch(err){}
-    state = { answers:{}, scores:[null,null,null,null,null], step:0, sid:newSid() };
+    state = { answers:{}, scores:[null,null,null,null,null], quick:{}, step:0, sid:newSid() };
+    $$('.qc__opt').forEach(b => b.classList.remove('on'));
     $$('textarea[data-k]').forEach(ta => { ta.value=''; autosize(ta); markFilled(ta); });
     $$('input[data-score]').forEach(r => {
       r.value = 5; paintRange(r);
       $(`[data-out="${r.dataset.score}"]`).textContent = '5';
     });
-    renderDiagnostic();
+    renderDiagnostic(); renderReco();
     nav(0);
     toast('הכול נוקה. אפשר להתחיל מחדש.');
   }

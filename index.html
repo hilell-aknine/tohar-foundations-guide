@@ -194,6 +194,42 @@ input[type=range]::-moz-range-thumb{ width:20px; height:20px; border-radius:50%;
 .pillar b{ font-family:var(--serif); font-weight:500; font-size:1.05rem; }
 .pillar span{ display:block; font-size:.87rem; color:var(--ink-mute); line-height:1.4; }
 
+/* ---- אבחון קצר ---- */
+.qc{ margin-bottom:26px; }
+.qc__q{ font-family:var(--serif); font-size:1.12rem; color:var(--ink); margin-bottom:12px; line-height:1.4; }
+.qc__opts{ display:flex; flex-direction:column; gap:9px; }
+.qc__opt{
+  text-align:start; background:var(--card); border:1px solid var(--line);
+  border-radius:var(--radius-sm); padding:13px 16px; cursor:pointer;
+  transition:all .22s cubic-bezier(.2,.7,.3,1); box-shadow:var(--shadow-sm);
+  display:flex; flex-direction:column; gap:2px; width:100%;
+}
+.qc__opt b{ font-family:var(--serif); font-weight:500; font-size:1.02rem; color:var(--ink); }
+.qc__opt span{ font-size:.83rem; color:var(--ink-mute); }
+.qc__opt:hover{ border-color:var(--accent-light); background:#fff; }
+.qc__opt.on{
+  background:var(--accent); border-color:var(--accent-deep);
+  box-shadow:0 4px 16px rgba(107,86,64,.26);
+}
+.qc__opt.on b{ color:#fff; }
+.qc__opt.on span{ color:rgba(255,255,255,.75); }
+.qc__note{ font-size:.84rem; color:var(--ink-mute); text-align:center; margin-top:4px; }
+
+/* ---- ההמלצה האישית ---- */
+.reco{
+  background:var(--card); border:1px solid var(--accent-light);
+  border-radius:var(--radius); padding:26px 22px; margin-bottom:22px;
+  box-shadow:var(--shadow-md);
+}
+.reco__head{ display:flex; align-items:center; gap:12px; margin-bottom:18px; padding-bottom:16px; border-bottom:1px solid var(--line); }
+.reco__head img{ width:52px; height:52px; border-radius:50%; object-fit:cover; flex:none; border:2px solid var(--accent-soft); }
+.reco__name{ font-family:var(--serif); font-size:1.12rem; line-height:1.3; color:var(--accent-deep); }
+.reco__role{ font-size:.74rem; color:var(--ink-mute); }
+.reco p{ color:var(--ink-soft); font-size:1rem; margin-bottom:1em; }
+.reco strong{ color:var(--accent-deep); }
+.reco__cta{ margin-top:18px; padding:16px 18px; background:var(--accent-soft); border-radius:var(--radius-sm); }
+.reco__cta p{ margin:0; color:var(--accent-deep); font-size:.98rem; }
+
 .chart{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:26px 20px; box-shadow:var(--shadow-md); margin-bottom:24px; }
 .bar{ margin-bottom:19px; } .bar:last-child{ margin-bottom:0; }
 .bar__top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px; gap:10px; }
