@@ -14,9 +14,10 @@
 ## פריסה
 ```bash
 # נתיב עברי שובר את ה-CLI. עובדים מ-ASCII.
-rm -rf /c/temp/tohar-guide && mkdir -p /c/temp/tohar-guide
-cp -r index.html app.js content.js vercel.json .vercelignore api assets /c/temp/tohar-guide/
-cd /c/temp/tohar-guide
+# שם התיקייה חייב להיות זהה לשם הפרויקט ב-Vercel, אחרת נוצר פרויקט כפול
+rm -rf /c/temp/tohar-foundations-guide && mkdir -p /c/temp/tohar-foundations-guide
+cp -r index.html app.js content.js vercel.json .vercelignore api assets /c/temp/tohar-foundations-guide/
+cd /c/temp/tohar-foundations-guide
 npx vercel@50.3.1 deploy --prod --yes --token "$VERCEL_TOKEN"
 ```
 
