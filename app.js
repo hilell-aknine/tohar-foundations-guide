@@ -15,6 +15,11 @@ const CFG = {
   STORE: 'tohar-foundations-v2'
 };
 
+// ב-Vercel המורה רצה כפונקציית שרת מקומית (/api/teacher) ואין צורך בסופרבייס.
+// ב-GitHub Pages אין צד שרת, ולכן נופלים ל-Edge Function.
+const ON_PAGES = /github\.io$/.test(location.hostname);
+CFG.TEACHER_URL = ON_PAGES ? CFG.SUPABASE_URL + '/functions/v1/teacher' : '/api/teacher';
+
 const $  = (s, c) => (c || document).querySelector(s);
 const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
 const esc = s => String(s).replace(/[&<>"]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[m]));
@@ -611,7 +616,7 @@ const T = { history:[], busy:false, greeted:false, online:null }; // null = טר
 
 async function probeTeacher(){
   try{
-    const r = await fetch(CFG.SUPABASE_URL + '/functions/v1/teacher', {
+    const r = await fetch(CFG.TEACHER_URL, {
       method:'OPTIONS',
       headers:{ 'Authorization':'Bearer ' + CFG.SUPABASE_ANON }
     });
@@ -715,7 +720,7 @@ async function ask(question){
   const typing = addMsg('t', `<div class="dots3"><i></i><i></i><i></i></div>`);
 
   try{
-    const res = await fetch(CFG.SUPABASE_URL + '/functions/v1/teacher', {
+    const res = await fetch(CFG.TEACHER_URL, {
       method:'POST',
       headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + CFG.SUPABASE_ANON },
       body: JSON.stringify({

@@ -9,6 +9,7 @@ const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 const FOUNDATIONS = ['זהות עסקית', 'הלקוחה', 'ההבטחה', 'אמון', 'המסלול'];
 
 const ALLOWED = [
+  'https://tohar-foundations-guide.vercel.app',
   'https://hilell-aknine.github.io',
   'http://localhost:3000',
   'http://127.0.0.1:5500'

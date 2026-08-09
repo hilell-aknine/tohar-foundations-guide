@@ -14,6 +14,7 @@ const MAX_TOKENS = 700;
 
 // מקורות מותרים. הוסף כאן את הדומיין החי כשהמדריך עולה.
 const ALLOWED = [
+  'https://tohar-foundations-guide.vercel.app',
   'https://hilell-aknine.github.io',
   'http://localhost:3000',
   'http://127.0.0.1:5500'

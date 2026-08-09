@@ -15,6 +15,7 @@ const GREEN_TOKEN    = Deno.env.get('GREEN_API_TOKEN') ?? '';
 const NOTIFY_PHONE   = Deno.env.get('TOHAR_NOTIFY_PHONE') ?? '';
 
 const ALLOWED = [
+  'https://tohar-foundations-guide.vercel.app',
   'https://hilell-aknine.github.io',
   'http://localhost:3000',
   'http://127.0.0.1:5500'
