@@ -111,7 +111,7 @@ function renderStep(s, idx){
         <div class="facts">
           <div class="fact"><b>5</b><span>יסודות</span></div>
           <div class="fact"><b>27</b><span>שאלות עבודה</span></div>
-          <div class="fact"><b>מורה</b><span>לאורך הדרך</span></div>
+          <div class="fact" id="factTeach"><b>אבחון</b><span>אישי בסוף</span></div>
         </div>
         <p class="welcome__note">התשובות שלך נשמרות אצלך. אפשר לעצור באמצע ולחזור מתי שתרצי.</p>
       </div>`;
@@ -164,9 +164,10 @@ function renderStep(s, idx){
             <div class="score__q">${esc(f.scoreQ)}</div>
             <div class="score__row">
               <input type="range" min="1" max="10" value="5" data-score="${s.f}" aria-label="${esc(f.scoreQ)}">
-              <div class="score__val"><span data-out="${s.f}">5</span><small>/10</small></div>
+              <div class="score__val"><span data-out="${s.f}">—</span><small>/10</small></div>
             </div>
             <div class="score__scale"><span>${esc(f.scaleLow)}</span><span>${esc(f.scaleHigh)}</span></div>
+            <div class="score__hint" data-hint="${s.f}">גררי את העיגול כדי לדרג</div>
           </div>
         </div>
         <div class="sumline">${f.summary}</div>`;
@@ -224,6 +225,7 @@ function renderStep(s, idx){
             <div class="fld">
               <label for="lName">איך קוראים לך?</label>
               <input id="lName" name="name" type="text" autocomplete="name" placeholder="השם שלך" required>
+              <div class="fld__err" id="lErrName"></div>
             </div>
             <div class="fld">
               <label for="lPhone">לאיזה טלפון לחזור?</label>
@@ -245,7 +247,7 @@ function renderStep(s, idx){
         ${pull(g.pull)}
         <div class="copy">${paras(g.copy2)}</div>
         <div class="closing__logo"><img src="assets/logo.png" alt="טוהר אקנין" width="420" height="420"></div>
-        <a class="btn btn--wa btn--block" href="https://wa.me/${CFG.WA_TOHAR}" target="_blank" rel="noopener" style="margin-top:18px">דברי איתי בוואטסאפ</a>
+        <a class="btn btn--wa btn--block" id="btnMeet3" href="#" target="_blank" rel="noopener" style="margin-top:18px">דברי איתי בוואטסאפ</a>
       </div>`;
     }
   }
@@ -304,16 +306,30 @@ function wireScores(){
   $$('input[data-score]').forEach(r => {
     const i = +r.dataset.score;
     if (state.scores[i] != null) r.value = state.scores[i];
-    paintRange(r);
-    $(`[data-out="${i}"]`).textContent = r.value;
-    r.addEventListener('input', () => {
+    paintScore(r, i);
+    const commit = () => {
       state.scores[i] = +r.value;
-      $(`[data-out="${i}"]`).textContent = r.value;
-      paintRange(r); save(); renderDiagnostic(); renderReco();
-    });
+      paintScore(r, i);
+      save(); renderDiagnostic(); renderReco();
+    };
+    r.addEventListener('input', commit);
+    // מקלדת ומגע שלא מייצרים input נחשבים גם הם כדירוג
+    r.addEventListener('change', commit);
+    r.addEventListener('keydown', e => { if (/^Arrow|Home|End|Page/.test(e.key)) setTimeout(commit, 0); });
   });
 }
+
+/** מצב "טרם דורג" מוצג במפורש. אסור להראות מספר שהמערכת לא סופרת. */
+function paintScore(r, i){
+  const rated = state.scores[i] != null;
+  const wrap  = r.closest('.score');
+  if (wrap) wrap.classList.toggle('rated', rated);
+  const out = $(`[data-out="${i}"]`);
+  if (out) out.textContent = rated ? state.scores[i] : '—';
+  r.style.setProperty('--pct', rated ? ((r.value - r.min) / (r.max - r.min)) * 100 + '%' : '0%');
+}
 function paintRange(r){ r.style.setProperty('--pct', ((r.value - r.min) / (r.max - r.min)) * 100 + '%'); }
+
 
 /* ══════════════ NAVIGATION ══════════════ */
 function go(i, opts){
@@ -373,6 +389,10 @@ function go(i, opts){
 function nav(i){
   i = Math.min(Math.max(i, 0), LAST);
   if (i === cur) return;
+  const from = STEPS[cur];
+  if (from.type === 'work' && i > cur && state.scores[from.f] == null){
+    toast('לא דירגת את היסוד הזה. אפשר לחזור בכל רגע.');
+  }
   go(i, { push:true });
 }
 function hashIndex(){
@@ -484,11 +504,12 @@ async function submitLead(e){
   e.preventDefault();
   const name  = $('#lName').value.trim();
   const phone = normalizePhone($('#lPhone').value);
+  const errN  = $('#lErrName');
   const err   = $('#lErr');
   const btn   = $('#lSend');
 
-  err.textContent = '';
-  if (name.length < 2){ err.textContent = 'רק שם, כדי שטוהר תדע למי היא חוזרת'; $('#lName').focus(); return; }
+  errN.textContent = ''; err.textContent = '';
+  if (name.length < 2){ errN.textContent = 'רק שם, כדי שטוהר תדע למי היא חוזרת'; $('#lName').focus(); return; }
   if (!phone){ err.textContent = 'המספר לא נראה תקין. נסי בפורמט 05X-XXXXXXX'; $('#lPhone').focus(); return; }
 
   btn.disabled = true; btn.textContent = 'שולח...';
@@ -506,14 +527,15 @@ async function submitLead(e){
       })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    leadDone(name);
+    leadSent(name);
   }catch(_){
-    // הבקאנד עוד לא חי — לא מאבדים את הליד, מעבירים אותו לוואטסאפ
-    leadDone(name, buildMeetingWa());
+    // הבקאנד לא זמין. אסור להגיד לה שנשלח — הליד יאבד בשקט.
+    leadNeedsSend(name);
   }
 }
 
-function leadDone(name, waHref){
+/** נשלח באמת */
+function leadSent(name){
   const box = $('#leadBox');
   if (!box) return;
   box.innerHTML = `<div class="lead__done">
@@ -522,10 +544,27 @@ function leadDone(name, waHref){
       </div>
       <h3>קיבלתי, ${esc(name)}</h3>
       <p>טוהר תחזור אלייך בקרוב עם תיאום לשיחה. בינתיים אפשר לשמור את המדריך שלך.</p>
-      ${waHref ? `<a class="btn btn--wa btn--block" href="${waHref}" target="_blank" rel="noopener" style="margin-top:14px">לשלוח לטוהר גם בוואטסאפ</a>` : ''}
-      <button class="btn btn--ghost btn--block" id="btnPrint2" style="margin-top:10px">שמירת המדריך שלי כ־PDF</button>
+      <button class="btn btn--ghost btn--block" id="btnPrint2" style="margin-top:16px">שמירת המדריך שלי כ־PDF</button>
     </div>`;
   toast('הפרטים נשלחו לטוהר');
+}
+
+/** לא נשלח. אומרים את האמת ומבקשים ממנה את הפעולה שכן עובדת. */
+function leadNeedsSend(name){
+  const box = $('#leadBox');
+  if (!box) return;
+  box.innerHTML = `<div class="lead__done">
+      <div class="lead__tick lead__tick--wait">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+      </div>
+      <h3>כמעט, ${esc(name)}</h3>
+      <p>נשאר צעד אחד: לשלוח את זה לטוהר. ההודעה כבר מוכנה עם התוצאות שלך, רק ללחוץ ולשלוח.</p>
+      <a class="btn btn--wa btn--block" href="${buildMeetingWa()}" target="_blank" rel="noopener" style="margin-top:16px">
+        לשלוח לטוהר בוואטסאפ
+      </a>
+      <button class="btn btn--ghost btn--block" id="btnPrint2" style="margin-top:10px">שמירת המדריך שלי כ־PDF</button>
+    </div>`;
+  toast('נשאר רק לשלוח');
 }
 
 /* ── הודעת קביעת פגישה ── */
@@ -568,7 +607,33 @@ function buildWa(){
 }
 
 /* ══════════════ TEACHER ══════════════ */
-const T = { history:[], busy:false, greeted:false, offline:false };
+const T = { history:[], busy:false, greeted:false, online:null }; // null = טרם נבדק
+
+async function probeTeacher(){
+  try{
+    const r = await fetch(CFG.SUPABASE_URL + '/functions/v1/teacher', {
+      method:'OPTIONS',
+      headers:{ 'Authorization':'Bearer ' + CFG.SUPABASE_ANON }
+    });
+    T.online = r.ok;
+  }catch(_){ T.online = false; }
+
+  const fact = $('#factTeach');
+  if (T.online && fact) fact.innerHTML = '<b>מורה</b><span>לאורך הדרך</span>';
+  applyTeacherState();
+}
+
+/** כשהמורה לא זמינה — אומרים את זה מיד, לא אחרי שהיא שאלה וחיכתה. */
+function applyTeacherState(){
+  const off = T.online === false;
+  const btn = $('#teach');
+  if (btn) btn.classList.toggle('is-off', off);
+  const inp = $('#tinput'), snd = $('#tsend'), sug = $('#tsug'), note = $('#tnote');
+  if (inp){ inp.disabled = off; inp.placeholder = off ? 'המורה עוד לא מחוברת' : 'מה את רוצה לשאול?'; }
+  if (snd)  snd.disabled = off;
+  if (sug)  sug.style.display = off ? 'none' : '';
+  if (note) note.textContent = off ? 'המורה תופעל בקרוב. שאר המדריך עובד רגיל.' : '';
+}
 
 function stepContext(){
   const s = STEPS[cur];
@@ -628,17 +693,20 @@ function openTeacher(){
     T.greeted = true;
     const s = STEPS[cur];
     const f = s.f != null ? GUIDE.foundations[s.f] : null;
-    const hello = f
-      ? `היי. אני כאן איתך ביסוד <strong>${esc(f.short)}</strong>. אפשר לשאול אותי כל דבר על מה שקראת, או לבקש שאעזור לך לנסח תשובה.`
-      : `היי. אני כאן איתך לאורך המסע. אפשר לשאול אותי כל דבר על החומר, או לבקש שאעזור לך לחשוב.`;
+    const hello = T.online === false
+      ? 'היי. אני עוד לא מחוברת כאן, אבל אני בדרך. בינתיים כל המדריך פתוח לפנייך, וכל מה שאת כותבת נשמר.'
+      : (f
+        ? `היי. אני כאן איתך ביסוד <strong>${esc(f.short)}</strong>. אפשר לשאול אותי על מה שקראת, או לבקש שאעזור לך לנסח תשובה.`
+        : 'היי. אני כאן איתך לאורך המסע. אפשר לשאול אותי על החומר, או לבקש שאעזור לך לחשוב.');
     addMsg('t', `<p>${hello}</p>`);
   }
-  setTimeout(() => $('#tinput').focus(), 320);
+  applyTeacherState();
+  if (T.online !== false) setTimeout(() => $('#tinput').focus(), 320);
 }
 function closeTeacher(){ $('#tsheet').classList.remove('on'); }
 
 async function ask(question){
-  if (T.busy || !question.trim()) return;
+  if (T.busy || !question.trim() || T.online === false) return;
   T.busy = true;
   $('#tsend').disabled = true;
   addMsg('user', `<p>${esc(question)}</p>`);
@@ -669,9 +737,9 @@ async function ask(question){
     T.history.push({ role:'assistant', content:reply });
     $('#tnote').textContent = '';
   }catch(err){
-    typing.innerHTML = `<p>אני עוד לא מחוברת כאן. בינתיים אפשר להמשיך בשאלות העבודה — כל מה שאת כותבת נשמר.</p>`;
-    $('#tnote').textContent = 'המורה תופעל בקרוב';
-    T.offline = true;
+    typing.innerHTML = `<p>אני עוד לא מחוברת כאן. בינתיים אפשר להמשיך בשאלות העבודה, וכל מה שאת כותבת נשמר.</p>`;
+    T.online = false;
+    applyTeacherState();
     T.history.pop();
   }finally{
     T.busy = false;
@@ -776,6 +844,7 @@ document.addEventListener('submit', e => {
 
 document.addEventListener('click', e => {
   if (e.target.closest('#btnMeet2')) e.target.closest('#btnMeet2').href = buildMeetingWa();
+  if (e.target.closest('#btnMeet3')) e.target.closest('#btnMeet3').href = buildMeetingWa();
   if (e.target.closest('#btnPrint2')){
     $$('textarea[data-k]').forEach(autosize);
     setTimeout(() => window.print(), 120);
@@ -792,10 +861,7 @@ document.addEventListener('click', e => {
     state = { answers:{}, scores:[null,null,null,null,null], quick:{}, step:0, sid:newSid() };
     $$('.qc__opt').forEach(b => b.classList.remove('on'));
     $$('textarea[data-k]').forEach(ta => { ta.value=''; autosize(ta); markFilled(ta); });
-    $$('input[data-score]').forEach(r => {
-      r.value = 5; paintRange(r);
-      $(`[data-out="${r.dataset.score}"]`).textContent = '5';
-    });
+    $$('input[data-score]').forEach(r => { r.value = 5; paintScore(r, +r.dataset.score); });
     renderDiagnostic(); renderReco();
     nav(0);
     toast('הכול נוקה. אפשר להתחיל מחדש.');
@@ -812,4 +878,5 @@ document.addEventListener('input', e => {
 }, true);
 
 window.addEventListener('resize', () => $$('textarea[data-k]').forEach(autosize));
+probeTeacher();
 })();
