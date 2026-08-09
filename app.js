@@ -26,7 +26,7 @@ GUIDE.foundations.forEach((f, i) => {
   STEPS.push({ type:'story', f:i });
   STEPS.push({ type:'work',  f:i });
 });
-STEPS.push({ type:'recap' }, { type:'quickcheck' }, { type:'diagnostic' }, { type:'closing' });
+STEPS.push({ type:'recap' }, { type:'quickcheck' }, { type:'diagnostic' }, { type:'contact' }, { type:'closing' });
 
 const LAST = STEPS.length - 1;
 
@@ -213,6 +213,29 @@ function renderStep(s, idx){
           <span>התשובות שלך נשמרות אוטומטית</span>
         </div>`;
 
+    case 'contact':
+      return `${crumb('★','הצעד הבא')}
+        <h2>שיחת אבחון עם טוהר</h2>
+        <p class="lede">שלושים דקות, בלי עלות ובלי התחייבות. נעבור על התמונה שיצאה לך ותצאי עם צעד ברור לשבוע הקרוב.</p>
+        <div class="lead" id="leadBox">
+          <div class="lead__why" id="leadWhy"></div>
+          <form id="leadForm" novalidate>
+            <div class="fld">
+              <label for="lName">איך קוראים לך?</label>
+              <input id="lName" name="name" type="text" autocomplete="name" placeholder="השם שלך" required>
+            </div>
+            <div class="fld">
+              <label for="lPhone">לאיזה טלפון לחזור?</label>
+              <input id="lPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="05X-XXXXXXX" required>
+              <div class="fld__err" id="lErr"></div>
+            </div>
+            <button type="submit" class="btn btn--primary btn--block" id="lSend">אשמח שטוהר תחזור אליי</button>
+          </form>
+          <p class="lead__note">הפרטים נשלחים לטוהר בלבד. בלי דיוור, בלי שיתוף.</p>
+          <div class="lead__or"><span>או</span></div>
+          <a class="btn btn--wa btn--block" id="btnMeet2" href="#" target="_blank" rel="noopener">לכתוב לטוהר בוואטסאפ עכשיו</a>
+        </div>`;
+
     case 'closing': {
       const g = GUIDE.closing;
       return `<div class="closing">
@@ -302,6 +325,7 @@ function go(i, opts){
   else if (s.type === 'recap')   where = 'חיבור';
   else if (s.type === 'quickcheck') where = 'אבחון קצר';
   else if (s.type === 'diagnostic') where = 'האבחון שלך';
+  else if (s.type === 'contact')    where = 'הצעד הבא';
   else                           where = 'לסיום';
   $('#where').innerHTML = where;
   $('#count').textContent = (i + 1) + ' / ' + STEPS.length;
@@ -317,6 +341,7 @@ function go(i, opts){
     next.textContent = i === 0 ? 'בואי נתחיל'
                      : nx === 'quickcheck' ? 'עוד שלוש שאלות'
                      : nx === 'diagnostic' ? 'לאבחון שלי'
+                     : nx === 'contact' ? 'לצעד הבא'
                      : 'הבא';
   }
 
@@ -330,6 +355,7 @@ function go(i, opts){
 
   if (!opts.silent) window.scrollTo({ top:0, behavior: prev === i ? 'auto' : 'smooth' });
   if (s.type === 'diagnostic'){ renderDiagnostic(); renderReco(); }
+  if (s.type === 'contact') renderLeadWhy();
   save();
 }
 
@@ -424,6 +450,72 @@ function renderReco(){
       <p>הדבר הזה נסגר הכי מהר בשיחה. בפגישת אבחון קצרה נעבור יחד על <strong>${esc(p.f.short)}</strong> בעסק שלך ספציפית, ותצאי עם צעד ברור לשבוע הקרוב.</p>
     </div>
   </div>`;
+}
+
+/* ── לכידת ליד ── */
+// מקבל 05X-XXXXXXX, +9725X..., 9725X... ומחזיר פורמט בינלאומי
+function normalizePhone(raw){
+  const d = String(raw || '').replace(/[^\d+]/g, '').replace(/^\+/, '');
+  if (/^05\d{8}$/.test(d))      return '972' + d.slice(1);
+  if (/^9725\d{8}$/.test(d))    return d;
+  if (/^5\d{8}$/.test(d))       return '972' + d;
+  return null;
+}
+
+function renderLeadWhy(){
+  const box = $('#leadWhy');
+  if (!box) return;
+  const p = profile();
+  if (!p){ box.innerHTML = ''; return; }
+  box.innerHTML = `<div class="lead__chip">היסוד שנעבור עליו: <b>${esc(p.f.short)}</b></div>`;
+}
+
+async function submitLead(e){
+  e.preventDefault();
+  const name  = $('#lName').value.trim();
+  const phone = normalizePhone($('#lPhone').value);
+  const err   = $('#lErr');
+  const btn   = $('#lSend');
+
+  err.textContent = '';
+  if (name.length < 2){ err.textContent = 'רק שם, כדי שטוהר תדע למי היא חוזרת'; $('#lName').focus(); return; }
+  if (!phone){ err.textContent = 'המספר לא נראה תקין. נסי בפורמט 05X-XXXXXXX'; $('#lPhone').focus(); return; }
+
+  btn.disabled = true; btn.textContent = 'שולח...';
+  const p = profile();
+
+  try{
+    const res = await fetch(CFG.SUPABASE_URL + '/functions/v1/guide-lead', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + CFG.SUPABASE_ANON },
+      body: JSON.stringify({
+        sid: state.sid, name, phone,
+        scores: state.scores, quick: state.quick,
+        weakest: p ? p.f.short : null,
+        avg: p ? +p.avg.toFixed(1) : null
+      })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    leadDone(name);
+  }catch(_){
+    // הבקאנד עוד לא חי — לא מאבדים את הליד, מעבירים אותו לוואטסאפ
+    leadDone(name, buildMeetingWa());
+  }
+}
+
+function leadDone(name, waHref){
+  const box = $('#leadBox');
+  if (!box) return;
+  box.innerHTML = `<div class="lead__done">
+      <div class="lead__tick">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <h3>קיבלתי, ${esc(name)}</h3>
+      <p>טוהר תחזור אלייך בקרוב עם תיאום לשיחה. בינתיים אפשר לשמור את המדריך שלך.</p>
+      ${waHref ? `<a class="btn btn--wa btn--block" href="${waHref}" target="_blank" rel="noopener" style="margin-top:14px">לשלוח לטוהר גם בוואטסאפ</a>` : ''}
+      <button class="btn btn--ghost btn--block" id="btnPrint2" style="margin-top:10px">שמירת המדריך שלי כ־PDF</button>
+    </div>`;
+  toast('הפרטים נשלחו לטוהר');
 }
 
 /* ── הודעת קביעת פגישה ── */
@@ -668,7 +760,16 @@ document.addEventListener('touchend', e => {
 }, { passive:true });
 
 // diagnostic actions (delegated — the step is rendered at boot)
+document.addEventListener('submit', e => {
+  if (e.target.id === 'leadForm') submitLead(e);
+});
+
 document.addEventListener('click', e => {
+  if (e.target.closest('#btnMeet2')) e.target.closest('#btnMeet2').href = buildMeetingWa();
+  if (e.target.closest('#btnPrint2')){
+    $$('textarea[data-k]').forEach(autosize);
+    setTimeout(() => window.print(), 120);
+  }
   if (e.target.closest('#btnPrint')){
     $$('textarea[data-k]').forEach(autosize);
     setTimeout(() => window.print(), 120);

@@ -254,6 +254,38 @@ input[type=range]::-moz-range-thumb{ width:20px; height:20px; border-radius:50%;
 .saved{ text-align:center; font-size:.82rem; color:var(--ink-mute); margin-top:18px; display:flex; align-items:center; justify-content:center; gap:7px; }
 .saved svg{ width:14px; height:14px; color:var(--bronze); }
 
+/* ---- לכידת ליד ---- */
+.lead{ background:var(--card); border:1px solid var(--accent-light); border-radius:var(--radius); padding:26px 22px; box-shadow:var(--shadow-md); }
+.lead__chip{
+  display:inline-block; font-size:.86rem; color:var(--accent-deep);
+  background:var(--accent-soft); border-radius:99px; padding:8px 15px; margin-bottom:20px;
+}
+.lead__chip b{ font-family:var(--serif); font-weight:600; }
+.fld{ margin-bottom:16px; }
+.fld label{ display:block; font-size:.95rem; color:var(--ink); margin-bottom:7px; }
+.fld input{
+  width:100%; font-family:var(--sans); font-size:16px; font-weight:300;
+  color:var(--ink); background:var(--cream); border:1px solid var(--line);
+  border-radius:var(--radius-sm); padding:14px 15px;
+  transition:border-color .25s, box-shadow .25s, background .25s;
+}
+.fld input::placeholder{ color:#A79B8A; }
+.fld input:focus{ outline:none; border-color:var(--accent-light); background:#fff; box-shadow:0 0 0 3px rgba(201,174,148,.22); }
+.fld__err{ font-size:.84rem; color:#A0522D; margin-top:6px; min-height:1.1em; }
+.lead__note{ font-size:.82rem; color:var(--ink-mute); text-align:center; margin:12px 0 0; }
+.lead__or{ position:relative; text-align:center; margin:20px 0 16px; }
+.lead__or::before{ content:''; position:absolute; inset-inline:0; top:50%; height:1px; background:var(--line); }
+.lead__or span{ position:relative; background:var(--card); padding:0 14px; font-size:.82rem; color:var(--ink-mute); }
+.lead__done{ text-align:center; padding:8px 0; }
+.lead__tick{
+  width:60px; height:60px; margin:0 auto 16px; border-radius:50%;
+  background:var(--accent); color:#fff; display:grid; place-items:center;
+  box-shadow:0 6px 20px rgba(107,86,64,.3);
+}
+.lead__tick svg{ width:28px; height:28px; }
+.lead__done h3{ font-size:1.4rem; margin-bottom:10px; color:var(--accent-deep); }
+.lead__done p{ color:var(--ink-soft); font-size:1rem; max-width:32ch; margin-inline:auto; }
+
 .closing{ text-align:center; }
 .closing__logo{ width:150px; margin:30px auto 6px; }
 
