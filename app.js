@@ -151,6 +151,7 @@ function renderStep(s, idx){
         <div class="q">
           <label for="q${s.f}_${i}"><b>${i + 1}</b>${esc(q)}</label>
           <textarea id="q${s.f}_${i}" data-k="f${f.n}q${i + 1}" placeholder="כתבי כאן..."></textarea>
+          <div class="q__print" aria-hidden="true"></div>
         </div>`).join('');
       return `${crumb(f.n, `יסוד ${f.n} · העבודה שלך`)}
         <h2>${esc(f.short)}</h2>
@@ -288,7 +289,16 @@ function wireAnswers(){
   });
 }
 function autosize(ta){ ta.style.height = 'auto'; ta.style.height = Math.max(72, ta.scrollHeight) + 'px'; }
-function markFilled(ta){ ta.classList.toggle('filled', ta.value.trim().length > 0); }
+function markFilled(ta){
+  const v = ta.value.trim();
+  ta.classList.toggle('filled', v.length > 0);
+  // גרסת ההדפסה: טקסט זורם במקום תיבה
+  const pr = ta.nextElementSibling;
+  if (pr && pr.classList.contains('q__print')){
+    pr.textContent = v;
+    pr.classList.toggle('empty', v.length === 0);
+  }
+}
 
 function wireScores(){
   $$('input[data-score]').forEach(r => {
