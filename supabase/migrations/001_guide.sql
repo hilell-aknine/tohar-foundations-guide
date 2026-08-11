@@ -33,7 +33,6 @@ create index if not exists guide_sessions_updated_idx on public.guide_sessions (
 create index if not exists guide_sessions_lead_idx    on public.guide_sessions (is_lead, created_at desc) where is_lead;
 
 -- ─────────── שיחות עם המורה ───────────
-create table if not exists public.teacher_messages (
   id          bigserial primary key,
   sid         uuid not null references public.guide_sessions(sid) on delete cascade,
   step_type   text,
@@ -44,10 +43,6 @@ create table if not exists public.teacher_messages (
   tokens_out  integer,
   created_at  timestamptz not null default now()
 );
-
-comment on table public.teacher_messages is 'כל שאלה שנשאלה את המורה. משמש גם למעקב עלויות וגם ללמידה מה באמת מבלבל בעלות עסקים.';
-
-create index if not exists teacher_messages_sid_idx on public.teacher_messages (sid, created_at);
 
 -- ─────────── updated_at ───────────
 create or replace function public.touch_updated_at()
@@ -69,13 +64,11 @@ create trigger guide_sessions_touch
 
 -- ─────────── RLS: deny-all ───────────
 alter table public.guide_sessions   enable row level security;
-alter table public.teacher_messages enable row level security;
 
 -- ללא אף policy = אף אחד לא נוגע חוץ מ-service_role (שעוקף RLS).
 -- זה מכוון. אל תוסיף כאן policy ל-anon.
 
 revoke all on public.guide_sessions   from anon, authenticated;
-revoke all on public.teacher_messages from anon, authenticated;
 
 -- ─────────── תצוגת לידים לטוהר ───────────
 create or replace view public.guide_leads as

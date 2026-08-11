@@ -1,6 +1,6 @@
 /* ============================================================
    מודל היסודות השיווקיים — המנוע
-   מסע שלבים · שמירת מצב · דוח אישי · המלווה
+   מסע שלבים · שמירת מצב · דוח היסודות האישי
    ============================================================ */
 (function () {
 'use strict';
@@ -14,11 +14,6 @@ const CFG = {
   WA_TOHAR: '972547471300',
   STORE: 'tohar-foundations-v2'
 };
-
-// ב-Vercel המורה רצה כפונקציית שרת מקומית (/api/teacher) ואין צורך בסופרבייס.
-// ב-GitHub Pages אין צד שרת, ולכן נופלים ל-Edge Function.
-const ON_PAGES = /github\.io$/.test(location.hostname);
-CFG.TEACHER_URL = ON_PAGES ? CFG.SUPABASE_URL + '/functions/v1/teacher' : '/api/teacher';
 
 const $  = (s, c) => (c || document).querySelector(s);
 const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
@@ -208,6 +203,7 @@ function renderStep(s, idx){
           <div>
             <h2>${esc(REPORT.title)}</h2>
             <p class="rep__for" id="repFor"></p>
+            <p class="rep__date" id="repDate"></p>
           </div>
         </div>
         <p class="lede">${esc(REPORT.lede)}</p>
@@ -398,9 +394,6 @@ function go(i, opts){
                      : 'הבא';
   }
 
-  // teacher context refresh
-  refreshSuggestions();
-
   // היסטוריה: כל שלב הוא כניסה משלו, כדי שכפתור "אחורה" של הדפדפן
   // יחזיר אותה שלב אחד ולא יזרוק אותה מהמדריך.
   if (opts.push)       history.pushState({ i }, '', '#' + i);
@@ -475,7 +468,12 @@ function buildReport(){
   const blanks = stats.flatMap(s => s.blanks.map(q => ({ name:s.f.short, q })));
   const spread = Math.max(...stats.map(s => s.score)) - Math.min(...stats.map(s => s.score));
 
-  return { ready:true, stats, total, band, weak, strengths, blanks, spread, asc, desc };
+  // הפער בין התחושה לניסוח. דירוג עצמי גבוה עם כתיבה דלה = יודעת אבל אין מילים.
+  // ההפך = כתבה טוב ולא נתנה לעצמה קרדיט. שני הכיוונים מבוססים על נתונים שכבר חושבו.
+  const blind  = stats.filter(s => s.self * 10 - s.work >=  30);
+  const humble = stats.filter(s => s.self * 10 - s.work <= -30);
+
+  return { ready:true, stats, total, band, weak, strengths, blanks, spread, asc, desc, blind, humble };
 }
 
 /* טבעת הציון — SVG, נדפסת נקי */
@@ -496,6 +494,13 @@ function renderReport(){
 
   const forLine = $('#repFor');
   if (forLine) forLine.textContent = state.name.trim() ? 'עבור ' + state.name.trim() : '';
+
+  // חותמת תאריך — הופכת את הדוח למסמך שאפשר לחזור אליו ולהשוות מולו
+  const dateLine = $('#repDate');
+  if (dateLine){
+    const d = new Date().toLocaleDateString('he-IL', { day:'numeric', month:'long', year:'numeric' });
+    dateLine.textContent = REPORT.dateLabel + ' ' + d;
+  }
 
   if (!r.ready){
     box.innerHTML = `<div class="verdict empty">
@@ -539,7 +544,22 @@ function renderReport(){
     ${r.spread >= 30 ? `<p class="rep__note">הפער בין היסוד החזק לחלש שלך הוא <bdi>${r.spread} נקודות</bdi>. פער כזה הוא בדרך כלל מה שגורם לשיווק להרגיש לא עקבי, כי היסודות עובדים כמערכת ולא בנפרד.</p>` : ''}
   </section>`);
 
-  /* ─── 3. מה את עושה טוב ─── */
+  /* ─── 3. הפער בין התחושה לניסוח ─── */
+  const gapCard = (kind, title, body, list) => `
+    <div class="item item--${kind}">
+      <div class="item__head"><b>${esc(title)}</b></div>
+      <ul class="gaplist">${list.map(s => `<li><span>${esc(s.f.short)}</span><em>הרגשת <bdi>${s.self}/10</bdi> · נוסח <bdi>${s.work}/100</bdi></em></li>`).join('')}</ul>
+      <p>${esc(body)}</p>
+    </div>`;
+  H.push(`<section class="rep">
+    <h3 class="rep__h">${esc(REPORT.gapTitle)}</h3>
+    <p class="rep__lede">${esc(REPORT.gapLede)}</p>
+    ${r.blind.length  ? gapCard('fix',  REPORT.gapBlindTitle,  REPORT.gapBlindBody,  r.blind)  : ''}
+    ${r.humble.length ? gapCard('good', REPORT.gapHumbleTitle, REPORT.gapHumbleBody, r.humble) : ''}
+    ${!r.blind.length && !r.humble.length ? `<div class="item"><p>${esc(REPORT.gapNone)}</p></div>` : ''}
+  </section>`);
+
+  /* ─── 4. מה את עושה טוב ─── */
   H.push(`<section class="rep">
     <h3 class="rep__h rep__h--good">${esc(REPORT.strengthsTitle)}</h3>
     ${r.strengths.length ? r.strengths.map(s => `
@@ -572,7 +592,7 @@ function renderReport(){
       </div>`).join('')}
   </section>`);
 
-  /* ─── 5. שאלות ריקות ─── */
+  /* ─── 6. שאלות ריקות ─── */
   const shown = r.blanks.slice(0, 6);
   H.push(`<section class="rep">
     <h3 class="rep__h">${esc(REPORT.blanksTitle)}</h3>
@@ -583,7 +603,7 @@ function renderReport(){
     : `<p class="rep__lede">${esc(REPORT.blanksNone)}</p>`}
   </section>`);
 
-  /* ─── 6. תוכנית שבועיים ─── */
+  /* ─── 7. תוכנית שבועיים ─── */
   const w1 = r.weak[0].f.actions.slice(0, 3);
   const w2 = r.weak[1].f.actions.slice(0, 2);
   H.push(`<section class="rep">
@@ -601,13 +621,14 @@ function renderReport(){
     </div>
   </section>`);
 
-  /* ─── 7. ההמלצה האישית של טוהר ─── */
+  /* ─── 8. ההמלצה האישית של טוהר ─── */
   H.push(recoBlock(r));
 
-  /* ─── 8. סיום ─── */
+  /* ─── 9. סיום ─── */
   H.push(`<section class="rep rep--end">
     <h3 class="rep__h">${esc(REPORT.closingTitle)}</h3>
     <p>${esc(REPORT.closing)}</p>
+    <p class="rep__reuse">${esc(REPORT.reuse)}</p>
   </section>`);
 
   box.innerHTML = H.join('');
@@ -778,145 +799,6 @@ function buildWa(){
   return 'https://wa.me/' + CFG.WA_TOHAR + '?text=' + encodeURIComponent(L.join('\n'));
 }
 
-/* ══════════════ COMPANION (המלווה) ══════════════ */
-const T = { history:[], busy:false, greeted:false, online:null }; // null = טרם נבדק
-
-async function probeTeacher(){
-  try{
-    const r = await fetch(CFG.TEACHER_URL, {
-      method:'OPTIONS',
-      headers:{ 'Authorization':'Bearer ' + CFG.SUPABASE_ANON }
-    });
-    T.online = r.ok;
-  }catch(_){ T.online = false; }
-
-  applyTeacherState();
-}
-
-/** כשהליווי לא זמין — אומרים את זה מיד, לא אחרי שהיא כתבה וחיכתה. */
-function applyTeacherState(){
-  const off = T.online === false;
-  const btn = $('#teach');
-  if (btn) btn.classList.toggle('is-off', off);
-  const inp = $('#tinput'), snd = $('#tsend'), sug = $('#tsug'), note = $('#tnote');
-  if (inp){ inp.disabled = off; inp.placeholder = off ? COMPANION.offPlaceholder : COMPANION.placeholder; }
-  if (snd)  snd.disabled = off;
-  if (sug)  sug.style.display = off ? 'none' : '';
-  if (note) note.textContent = off ? COMPANION.offNote : '';
-}
-
-function stepContext(){
-  const s = STEPS[cur];
-  const f = s.f != null ? GUIDE.foundations[s.f] : null;
-  const ctx = { stepType:s.type, stepIndex:cur, totalSteps:STEPS.length };
-  if (f){
-    ctx.foundation = { n:f.n, name:f.name, question:f.question, summary:stripTags(f.summary) };
-    if (s.type === 'idea')  ctx.material = [f.lede, ...(f.copy||[]), ...(f.beats||[]), ...(f.psych||[])].map(stripTags).join(' ');
-    if (s.type === 'story') ctx.material = (f.stories||[]).map(st => [...(st.body||[]), st.said||'', ...(st.body2||[])].join(' ')).map(stripTags).join(' ');
-    if (s.type === 'work'){
-      ctx.material = f.questions.join(' | ');
-      ctx.herAnswers = f.questions.map((q, i) => ({
-        question: q,
-        answer: (state.answers['f' + f.n + 'q' + (i + 1)] || '').trim()
-      })).filter(a => a.answer);
-      if (state.scores[s.f] != null) ctx.herScore = state.scores[s.f];
-    }
-  }
-  if (s.type === 'diagnostic' || s.type === 'closing' || s.type === 'quickcheck'){
-    ctx.allScores = GUIDE.foundations.map((f2, i) => ({ name:f2.short, score:state.scores[i] }));
-    const Q = QUICKCHECK.reduce((m,q) => (m[q.k]=q, m), {});
-    ctx.quickCheck = Object.entries(state.quick).filter(([,v]) => v).map(([k,v]) => {
-      const o = Q[k] && Q[k].opts.find(x => x.v === v);
-      return o ? { question: Q[k].q, answer: o.t } : null;
-    }).filter(Boolean);
-  }
-  return ctx;
-}
-function stripTags(s){ return String(s || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(); }
-
-function addMsg(role, html){
-  const d = document.createElement('div');
-  d.className = 'msg msg--' + (role === 'user' ? 'u' : 't');
-  d.innerHTML = html;
-  $('#tlog').appendChild(d);
-  $('#tlog').scrollTop = $('#tlog').scrollHeight;
-  return d;
-}
-function fmt(txt){
-  return esc(txt)
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
-}
-
-function refreshSuggestions(){
-  const s = STEPS[cur];
-  const key = COMPANION_PROMPTS[s.type] ? s.type : 'other';
-  const list = COMPANION_PROMPTS[key];
-  const box = $('#tsug');
-  if (!box) return;
-  box.innerHTML = list.map(p => `<button type="button">${esc(p)}</button>`).join('');
-}
-
-function openTeacher(){
-  $('#tsheet').classList.add('on');
-  if (!T.greeted){
-    T.greeted = true;
-    const s = STEPS[cur];
-    const f = s.f != null ? GUIDE.foundations[s.f] : null;
-    const hello = T.online === false
-      ? COMPANION.helloOff
-      : (f ? COMPANION.helloAt(esc(f.short)) : COMPANION.hello);
-    addMsg('t', `<p>${hello}</p>`);
-  }
-  applyTeacherState();
-  if (T.online !== false) setTimeout(() => $('#tinput').focus(), 320);
-}
-function closeTeacher(){ $('#tsheet').classList.remove('on'); }
-
-async function ask(question){
-  if (T.busy || !question.trim() || T.online === false) return;
-  T.busy = true;
-  $('#tsend').disabled = true;
-  addMsg('user', `<p>${esc(question)}</p>`);
-  T.history.push({ role:'user', content:question });
-
-  const typing = addMsg('t', `<div class="dots3"><i></i><i></i><i></i></div>`);
-
-  try{
-    const res = await fetch(CFG.TEACHER_URL, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + CFG.SUPABASE_ANON },
-      body: JSON.stringify({
-        sid: state.sid,
-        question,
-        context: stepContext(),
-        history: T.history.slice(-8)
-      })
-    });
-
-    if (!res.ok){
-      const t = await res.text().catch(() => '');
-      throw new Error('HTTP ' + res.status + ' ' + t.slice(0, 140));
-    }
-    const data = await res.json();
-    const reply = (data && (data.reply || data.text)) || '';
-    if (!reply) throw new Error('empty');
-    typing.innerHTML = fmt(reply);
-    T.history.push({ role:'assistant', content:reply });
-    $('#tnote').textContent = '';
-  }catch(err){
-    typing.innerHTML = `<p>אני עוד לא מחוברת כאן. בינתיים אפשר להמשיך בשאלות העבודה, וכל מה שאת כותבת נשמר.</p>`;
-    T.online = false;
-    applyTeacherState();
-    T.history.pop();
-  }finally{
-    T.busy = false;
-    $('#tsend').disabled = false;
-    $('#tlog').scrollTop = $('#tlog').scrollHeight;
-  }
-}
-
-/* ══════════════ CLOUD SYNC (best-effort, never blocks) ══════════════ */
 let syncT;
 function syncUp(){
   clearTimeout(syncT);
@@ -942,16 +824,6 @@ function syncUp(){
 load();
 build();
 
-// שמות המלווה מגיעים מ-content.js. ה-HTML מחזיק רק ברירת מחדל.
-(function nameCompanion(){
-  const set = (sel, txt) => { const el = $(sel); if (el) el.textContent = txt; };
-  set('#teachLabel', COMPANION.button);
-  set('#tName',      COMPANION.name);
-  set('#tRole',      COMPANION.role);
-  const inp = $('#tinput'); if (inp) inp.placeholder = COMPANION.placeholder;
-  const btn = $('#teach'); if (btn) btn.setAttribute('aria-label', COMPANION.button);
-})();
-
 // resume where she left off — כתובת מפורשת גוברת על השלב השמור
 const start = hashIndex();
 go(start != null ? start : (state.step || 0), { silent:true });
@@ -968,34 +840,9 @@ window.addEventListener('hashchange', () => {
 
 $('#next').addEventListener('click', () => nav(cur + 1));
 $('#back').addEventListener('click', () => nav(cur - 1));
-$('#teach').addEventListener('click', openTeacher);
-$('#tclose').addEventListener('click', closeTeacher);
-$('#tsheet').addEventListener('click', e => { if (e.target.id === 'tsheet') closeTeacher(); });
-
-$('#tsug').addEventListener('click', e => {
-  const b = e.target.closest('button');
-  if (b) ask(b.textContent);
-});
-$('#tform').addEventListener('submit', e => {
-  e.preventDefault();
-  const v = $('#tinput').value;
-  $('#tinput').value = ''; $('#tinput').style.height = 'auto';
-  ask(v);
-});
-$('#tinput').addEventListener('input', e => {
-  e.target.style.height = 'auto';
-  e.target.style.height = Math.min(120, e.target.scrollHeight) + 'px';
-});
-$('#tinput').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('#tform').requestSubmit(); }
-});
 
 // keyboard: RTL — left arrow advances, right arrow goes back
 document.addEventListener('keydown', e => {
-  if ($('#tsheet').classList.contains('on')){
-    if (e.key === 'Escape') closeTeacher();
-    return;
-  }
   if (e.target.matches('textarea, input')) return;
   if (e.key === 'ArrowLeft')  nav(cur + 1);
   if (e.key === 'ArrowRight') nav(cur - 1);
@@ -1004,12 +851,10 @@ document.addEventListener('keydown', e => {
 // swipe
 let tx = 0, ty = 0;
 document.addEventListener('touchstart', e => {
-  if ($('#tsheet').classList.contains('on')) return;
   tx = e.changedTouches[0].clientX; ty = e.changedTouches[0].clientY;
 }, { passive:true });
 document.addEventListener('touchend', e => {
-  if ($('#tsheet').classList.contains('on')) return;
-  if (e.target.closest('textarea, input, .tsheet')) return;
+  if (e.target.closest('textarea, input')) return;
   const dx = e.changedTouches[0].clientX - tx;
   const dy = e.changedTouches[0].clientY - ty;
   if (Math.abs(dx) < 70 || Math.abs(dy) > 60) return;
@@ -1065,5 +910,4 @@ document.addEventListener('input', e => {
 }, true);
 
 window.addEventListener('resize', () => $$('textarea[data-k]').forEach(autosize));
-probeTeacher();
 })();

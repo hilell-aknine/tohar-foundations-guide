@@ -26,16 +26,13 @@ npx supabase secrets set TOHAR_NOTIFY_PHONE=972547471300 --project-ref llhgjyskc
 # אופציונלי, להתראות וואטסאפ (המופע פג — הליד נשמר גם בלי זה):
 # npx supabase secrets set GREEN_API_URL=… GREEN_API_INSTANCE=… GREEN_API_TOKEN=…
 
-npx supabase functions deploy teacher        --no-verify-jwt --project-ref llhgjyskcuedommznwqg
 npx supabase functions deploy guide-progress --no-verify-jwt --project-ref llhgjyskcuedommznwqg
 npx supabase functions deploy guide-lead     --no-verify-jwt --project-ref llhgjyskcuedommznwqg
 ```
 
 ## אימות אחרי הפריסה
-1. לפתוח את המדריך החי, ללחוץ "המורה" ולשאול שאלה — צריכה לענות בעברית, בלשון נקבה, ולהחזיר שאלה ולא הרצאה.
 2. למלא את טופס הליד עם מספר אמיתי → לוודא שורה ב-`guide_sessions` עם `is_lead = true`.
 3. לוודא שהטלפון נשמר בפורמט `9725XXXXXXXX`.
-4. `select * from teacher_messages order by created_at desc limit 5;` — לוודא שנרשם שימוש בטוקנים למעקב עלות.
 
 ## חוקי ברזל
 - 🔴 `ANTHROPIC_API_KEY` הוא secret של Edge Function בלבד. **לעולם לא ב-`app.js`.**

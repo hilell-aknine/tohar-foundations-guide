@@ -9,7 +9,7 @@
 <meta property="og:description" content="שיווק טוב הוא לא אוסף של טיפים. הוא מערכת. מסע אינטראקטיבי בחמישה יסודות, עם דוח אישי בסוף.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="assets/logo.png">
-<meta name="theme-color" content="#EDE2D3">
+<meta name="theme-color" content="#EFDBCC">
 <link rel="icon" href="assets/logo.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,16 +24,16 @@
    ============================================================ */
 :root{
   /* טרהקוטה = צבע הפעולה. חום־דיו = צבע הטקסט. כל צמד נבדק מול תקן הניגודיות. */
-  --warm:#A8522F; --warm-deep:#8E4622; --warm-light:#D89A72;
-  --warm-soft:#F6E7DA; --warm-line:#E2C3AA;
+  --warm:#A34418; --warm-deep:#853C15; --warm-light:#CE7F4F;
+  --warm-soft:#F8E3D2; --warm-line:#DFB795;
   --accent:#6B5640; --accent-deep:#54422F; --accent-light:#C9AE94; --accent-soft:#F3EADC;
   --bronze:#977E62; --bronze-light:#C9AE94;
   --ink:#000000; --ink-soft:#333333; --ink-mute:#595959;
-  --cream:#EDE2D3; --cream-deep:#E0D2BE; --card:#FAF5EC; --line:#D9CBB6;
+  --cream:#EFDBCC; --cream-deep:#E3C9B6; --card:#FCF0E8; --line:#DCC0AC;
   --radius:18px; --radius-sm:12px;
-  --shadow-sm:0 1px 3px rgba(107,86,64,.07), 0 6px 18px rgba(107,86,64,.06);
-  --shadow-md:0 2px 6px rgba(107,86,64,.09), 0 16px 44px rgba(107,86,64,.10);
-  --shadow-lg:0 4px 12px rgba(142,70,34,.12), 0 28px 70px rgba(142,70,34,.15);
+  --shadow-sm:0 1px 3px rgba(133,60,21,.09), 0 6px 18px rgba(133,60,21,.08);
+  --shadow-md:0 2px 6px rgba(133,60,21,.11), 0 16px 44px rgba(133,60,21,.13);
+  --shadow-lg:0 4px 12px rgba(133,60,21,.12), 0 28px 70px rgba(133,60,21,.15);
   --serif:'Rubik', -apple-system, 'Segoe UI', sans-serif;   /* כותרות — Bold */
   --sans:'Rubik', -apple-system, 'Segoe UI', sans-serif;    /* גוף */
   --maxw:680px;
@@ -58,7 +58,7 @@ button{ font-family:inherit; }
 
 .hdr{
   position:sticky; top:0; z-index:40;
-  background:rgba(237,226,211,.97);
+  background:rgba(239,219,204,.97);
   backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid var(--line);
 }
@@ -79,7 +79,7 @@ button{ font-family:inherit; }
 
 .nav{
   position:fixed; bottom:0; inset-inline:0; z-index:45;
-  background:rgba(237,226,211,.97);
+  background:rgba(239,219,204,.97);
   backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
   border-top:1px solid var(--line);
   padding:12px 20px calc(12px + env(safe-area-inset-bottom));
@@ -95,7 +95,7 @@ button{ font-family:inherit; }
   border:1px solid transparent; cursor:pointer; text-decoration:none; line-height:1;
   transition:all .25s cubic-bezier(.2,.7,.3,1); white-space:nowrap;
 }
-.btn--primary{ background:var(--warm); color:#fff; box-shadow:0 4px 16px rgba(168,82,47,.30); }
+.btn--primary{ background:var(--warm); color:#fff; box-shadow:0 4px 16px rgba(163,68,24,.30); }
 .btn--primary:hover{ background:var(--warm-deep); transform:translateY(-1px); }
 .btn--ghost{ background:transparent; color:var(--warm-deep); border-color:var(--warm-line); }
 .btn--ghost:hover{ background:var(--card); border-color:var(--warm-light); }
@@ -104,10 +104,6 @@ button{ font-family:inherit; }
 .btn--block{ width:100%; }
 .btn:disabled{ opacity:.32; cursor:not-allowed; transform:none !important; }
 .btn--icon{ padding:14px; width:50px; }
-.btn--teach{ background:var(--warm-soft); color:var(--warm-deep); border-color:var(--warm-line); padding:11px 16px 11px 11px; font-weight:600; }
-.btn--teach:hover{ background:#fff; }
-.btn--teach .cmark{ width:26px; height:26px; }
-@media (max-width:380px){ .btn--teach span{ display:none; } .btn--teach{ padding:11px; } }
 
 /* ══════════════ WELCOME ══════════════ */
 .welcome{ text-align:center; padding-top:4px; }
@@ -132,7 +128,7 @@ button{ font-family:inherit; }
 
 /* ══════════════ STEP CONTENT ══════════════ */
 .crumb{ display:flex; align-items:center; gap:12px; margin-bottom:14px; }
-.crumb i{ font-style:normal; font-family:var(--serif); font-size:.88rem; font-weight:700; width:36px; height:36px; flex:none; border-radius:50%; display:grid; place-items:center; background:var(--warm); color:#fff; box-shadow:0 3px 10px rgba(168,82,47,.28); }
+.crumb i{ font-style:normal; font-family:var(--serif); font-size:.88rem; font-weight:700; width:36px; height:36px; flex:none; border-radius:50%; display:grid; place-items:center; background:var(--warm); color:#fff; box-shadow:0 3px 10px rgba(163,68,24,.28); }
 .crumb span{ font-size:.8rem; letter-spacing:.08em; color:var(--warm-deep); font-weight:600; }
 .step h2{ font-size:clamp(1.6rem,5.6vw,2.2rem); margin-bottom:12px; }
 .lede{ font-size:1.05rem; color:var(--ink); font-weight:500; margin-bottom:24px; line-height:1.6; }
@@ -175,7 +171,7 @@ button{ font-family:inherit; }
   transition:border-color .25s, box-shadow .25s, background .25s;
 }
 .q textarea::placeholder{ color:#A79B8A; }
-.q textarea:focus{ outline:none; border-color:var(--warm); background:#fff; box-shadow:0 0 0 3px rgba(168,82,47,.18); }
+.q textarea:focus{ outline:none; border-color:var(--warm); background:#fff; box-shadow:0 0 0 3px rgba(163,68,24,.18); }
 .q textarea.filled{ background:#fff; border-color:var(--warm-light); }
 .q__print{ display:none; }
 
@@ -196,11 +192,11 @@ button{ font-family:inherit; }
 @media (prefers-reduced-motion:reduce){ .score__hint::before{ animation:none; } }
 input[type=range]{ -webkit-appearance:none; appearance:none; flex:1; height:6px; background:transparent; cursor:pointer; margin:0; }
 /* "to left" ולא 90deg — ב-RTL הידית נעה מימין לשמאל, אז המילוי חייב להתחיל מימין */
-input[type=range]::-webkit-slider-runnable-track{ height:7px; border-radius:99px; background:linear-gradient(to left,var(--warm) var(--pct,50%), #E0D2BE var(--pct,50%)); }
-input[type=range]::-moz-range-track{ height:7px; border-radius:99px; background:#E0D2BE; }
+input[type=range]::-webkit-slider-runnable-track{ height:7px; border-radius:99px; background:linear-gradient(to left,var(--warm) var(--pct,50%), #E3C9B6 var(--pct,50%)); }
+input[type=range]::-moz-range-track{ height:7px; border-radius:99px; background:#E3C9B6; }
 input[type=range]::-moz-range-progress{ height:7px; border-radius:99px; background:var(--warm); }
-input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:26px; height:26px; border-radius:50%; margin-top:-10px; background:#fff; border:3px solid var(--warm); box-shadow:0 2px 8px rgba(168,82,47,.35); }
-input[type=range]::-moz-range-thumb{ width:20px; height:20px; border-radius:50%; background:#fff; border:3px solid var(--warm); box-shadow:0 2px 8px rgba(168,82,47,.35); }
+input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:26px; height:26px; border-radius:50%; margin-top:-10px; background:#fff; border:3px solid var(--warm); box-shadow:0 2px 8px rgba(163,68,24,.35); }
+input[type=range]::-moz-range-thumb{ width:20px; height:20px; border-radius:50%; background:#fff; border:3px solid var(--warm); box-shadow:0 2px 8px rgba(163,68,24,.35); }
 .score__scale{ display:flex; justify-content:space-between; font-size:.8rem; color:var(--ink-mute); margin-top:9px; }
 
 .pillars{ display:flex; flex-direction:column; gap:10px; margin-top:24px; }
@@ -224,7 +220,7 @@ input[type=range]::-moz-range-thumb{ width:20px; height:20px; border-radius:50%;
 .qc__opt:hover{ border-color:var(--warm-light); background:#fff; }
 .qc__opt.on{
   background:var(--warm); border-color:var(--warm-deep);
-  box-shadow:0 4px 16px rgba(168,82,47,.30);
+  box-shadow:0 4px 16px rgba(163,68,24,.30);
 }
 .qc__opt.on b{ color:#fff; }
 .qc__opt.on span{ color:rgba(255,255,255,.82); }
@@ -250,6 +246,24 @@ input[type=range]::-moz-range-thumb{ width:20px; height:20px; border-radius:50%;
 .rep__logo{ width:56px; flex:none; }
 .rep__for{ margin:2px 0 0; font-size:.92rem; color:var(--warm-deep); font-weight:600; }
 .rep__for:empty{ display:none; }
+.rep__date{ margin:3px 0 0; font-size:.8rem; color:var(--ink-mute); }
+.rep__date:empty{ display:none; }
+
+/* הפער בין התחושה לניסוח */
+.gaplist{ list-style:none; margin:12px 0 14px; padding:0; display:flex; flex-direction:column; gap:8px; }
+.gaplist li{
+  display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  background:var(--card); border:1px solid var(--warm-line); border-radius:var(--radius-sm);
+  padding:10px 14px;
+}
+.gaplist li span{ font-weight:700; color:var(--ink); font-size:.97rem; }
+/* הטקסט העברי נשאר RTL; רק המספרים מבודדים, אחרת "9/10" מתהפך */
+.gaplist li em{ font-style:normal; font-size:.84rem; color:var(--warm-deep); font-weight:600; }
+.gaplist li em bdi{ direction:ltr; unicode-bidi:isolate; }
+.rep__reuse{
+  margin-top:14px; padding-top:14px; border-top:1px solid var(--warm-line);
+  font-size:.95rem; color:var(--ink-soft); line-height:1.7;
+}
 
 .namefld{ margin:0 0 26px; }
 .namefld label{ display:block; font-size:.9rem; color:var(--ink-mute); margin-bottom:7px; }
@@ -259,7 +273,7 @@ input[type=range]::-moz-range-thumb{ width:20px; height:20px; border-radius:50%;
   transition:border-color .25s, box-shadow .25s;
 }
 .namefld input::placeholder{ color:#A79B8A; }
-.namefld input:focus{ outline:none; border-color:var(--warm); box-shadow:0 0 0 3px rgba(168,82,47,.18); }
+.namefld input:focus{ outline:none; border-color:var(--warm); box-shadow:0 0 0 3px rgba(163,68,24,.18); }
 
 .rep{ margin-bottom:30px; }
 .rep__h{
@@ -396,7 +410,7 @@ input[type=range]::-moz-range-thumb{ width:20px; height:20px; border-radius:50%;
   transition:border-color .25s, box-shadow .25s, background .25s;
 }
 .fld input::placeholder{ color:#A79B8A; }
-.fld input:focus{ outline:none; border-color:var(--warm); background:#fff; box-shadow:0 0 0 3px rgba(168,82,47,.18); }
+.fld input:focus{ outline:none; border-color:var(--warm); background:#fff; box-shadow:0 0 0 3px rgba(163,68,24,.18); }
 .fld__err{ font-size:.84rem; color:#A0522D; margin-top:6px; min-height:1.1em; }
 .lead__note{ font-size:.86rem; color:var(--ink-mute); text-align:center; margin:12px 0 0; }
 .lead__or{ position:relative; text-align:center; margin:20px 0 16px; }
@@ -406,69 +420,15 @@ input[type=range]::-moz-range-thumb{ width:20px; height:20px; border-radius:50%;
 .lead__tick{
   width:60px; height:60px; margin:0 auto 16px; border-radius:50%;
   background:var(--warm); color:#fff; display:grid; place-items:center;
-  box-shadow:0 6px 20px rgba(168,82,47,.34);
+  box-shadow:0 6px 20px rgba(163,68,24,.34);
 }
 .lead__tick svg{ width:28px; height:28px; }
 .lead__tick--wait{ background:var(--warm-deep); }
-.btn--teach.is-off{ opacity:.6; }
 .lead__done h3{ font-size:1.35rem; margin-bottom:10px; color:var(--ink); }
 .lead__done p{ color:var(--ink-soft); font-size:1rem; max-width:32ch; margin-inline:auto; }
 
 .closing{ text-align:center; }
 .closing__logo{ width:150px; margin:30px auto 6px; }
-
-/* ══════════════ המלווה ══════════════ */
-/* סימן משלה — מכוון, לא הפנים של טוהר. הליווי נשען על השיטה שלה,
-   אבל אסור שייראה כאילו טוהר עצמה מקלידה בצד השני. */
-.cmark{
-  width:30px; height:30px; flex:none; border-radius:50%;
-  display:grid; place-items:center;
-  background:var(--warm-soft); border:1.5px solid var(--warm-light); color:var(--warm);
-}
-.cmark svg{ width:60%; height:60%; }
-.cmark--lg{ width:44px; height:44px; }
-
-.tsheet{ position:fixed; inset:0; z-index:70; display:none; background:rgba(51,42,33,.42); backdrop-filter:blur(3px); }
-.tsheet.on{ display:block; }
-.tsheet__panel{
-  position:absolute; inset-inline:0; bottom:0; height:86dvh;
-  background:var(--cream); border-radius:22px 22px 0 0;
-  display:flex; flex-direction:column; box-shadow:0 -10px 50px rgba(51,42,33,.28);
-  animation:slideUp .34s cubic-bezier(.2,.8,.25,1) both;
-}
-@keyframes slideUp{ from{ transform:translateY(100%);} to{ transform:none; } }
-@media (min-width:900px){
-  .tsheet__panel{ inset-block:0; inset-inline-end:auto; inset-inline-start:0; width:440px; height:100dvh;
-    border-radius:0 22px 22px 0; animation:slideIn .34s cubic-bezier(.2,.8,.25,1) both; }
-  @keyframes slideIn{ from{ transform:translateX(100%);} to{ transform:none; } }
-}
-.tsheet__head{ display:flex; align-items:center; gap:12px; padding:16px 20px; border-bottom:1px solid var(--line); flex:none; }
-.tsheet__name{ font-family:var(--serif); font-weight:700; font-size:1.06rem; line-height:1.25; color:var(--ink); }
-.tsheet__role{ font-size:.79rem; color:var(--ink-mute); }
-.tsheet__x{ margin-inline-start:auto; background:none; border:0; cursor:pointer; color:var(--ink-mute); width:44px; height:44px; border-radius:50%; display:grid; place-items:center; }
-.tsheet__x:hover{ background:var(--cream-deep); }
-
-.tlog{ flex:1; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:13px; }
-.msg{ max-width:88%; font-size:.97rem; line-height:1.7; }
-.msg--t{ align-self:flex-start; background:var(--card); border:1px solid var(--line); border-radius:16px 16px 16px 4px; padding:13px 16px; color:var(--ink-soft); }
-.msg--u{ align-self:flex-end; background:var(--warm); color:#fff; border-radius:16px 16px 4px 16px; padding:13px 16px; font-weight:400; }
-.msg p{ margin:0 0 .7em; } .msg p:last-child{ margin:0; }
-.msg--t strong{ color:var(--warm-deep); font-weight:700; }
-.dots3{ display:flex; gap:5px; padding:4px 2px; }
-.dots3 i{ width:7px; height:7px; border-radius:50%; background:var(--warm-light); animation:blink 1.3s infinite; }
-.dots3 i:nth-child(2){ animation-delay:.2s; } .dots3 i:nth-child(3){ animation-delay:.4s; }
-@keyframes blink{ 0%,60%,100%{ opacity:.3; } 30%{ opacity:1; } }
-
-.tsug{ display:flex; gap:8px; padding:0 20px 12px; flex-wrap:wrap; flex:none; }
-.tsug button{ min-height:44px; font-size:.87rem; color:var(--warm-deep); background:var(--warm-soft); border:1px solid var(--warm-line); border-radius:99px; padding:8px 14px; cursor:pointer; transition:background .2s; }
-.tsug button:hover{ background:#fff; }
-
-.tform{ display:flex; gap:9px; padding:12px 20px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); flex:none; align-items:flex-end; }
-.tform textarea{ flex:1; min-height:46px; max-height:120px; resize:none; font-family:var(--sans); font-size:16px; font-weight:400; line-height:1.5; border:1px solid var(--line); border-radius:22px; padding:12px 16px; background:#fff; color:var(--ink); }
-.tform textarea:focus{ outline:none; border-color:var(--warm); box-shadow:0 0 0 3px rgba(168,82,47,.18); }
-.tform button{ width:46px; height:46px; flex:none; border-radius:50%; border:0; background:var(--warm); color:#fff; cursor:pointer; display:grid; place-items:center; }
-.tform button:disabled{ opacity:.4; cursor:not-allowed; }
-.tnote{ font-size:.82rem; color:var(--ink-mute); text-align:center; padding:0 20px 10px; }
 
 .toast{
   position:fixed; bottom:calc(var(--navh) + 16px); inset-inline:0; margin-inline:auto;
@@ -483,7 +443,7 @@ input[type=range]::-moz-range-thumb{ width:20px; height:20px; border-radius:50%;
 @media print{
   @page{ margin:14mm 12mm; }
   body{ background:#fff; font-size:11pt; }
-  .hdr,.nav,.tsheet,.toast,.actions,.saved,.btn,.tsug,.welcome__note,
+  .hdr,.nav,.toast,.actions,.saved,.btn,.welcome__note,
   .step[data-type="contact"], .score__hint, .lead, .qc__note, [data-noprint]{ display:none !important; }
 
   /* ── מצב "הדוח בלבד": מסמך אחד נקי, לא כל המסע ── */
@@ -494,14 +454,14 @@ input[type=range]::-moz-range-thumb{ width:20px; height:20px; border-radius:50%;
   .rep{ break-inside:avoid; page-break-inside:avoid; margin-bottom:18px; }
   .rep__h{ break-after:avoid; page-break-after:avoid; }
   .scorecard{
-    background:#A8522F !important; color:#fff !important; box-shadow:none;
+    background:#A34418 !important; color:#fff !important; box-shadow:none;
     -webkit-print-color-adjust:exact; print-color-adjust:exact;
   }
   .ring__bg{ stroke:rgba(255,255,255,.3) !important; }
   .ring__on{ stroke:#fff !important; }
   .rep__method, .item__acts, .plan__wk, .item, .chart{ box-shadow:none; }
-  .rep__method{ background:#F6E7DA !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  .bar.weakest{ background:#F6E7DA !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .rep__method{ background:#F8E3D2 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .bar.weakest{ background:#F8E3D2 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   .bar.weakest .bar__name::after, .plan__t span, .blanks li span{
     -webkit-print-color-adjust:exact; print-color-adjust:exact;
   }
@@ -559,41 +519,9 @@ input[type=range]::-moz-range-thumb{ width:20px; height:20px; border-radius:50%;
       <button class="btn btn--ghost btn--icon" id="back" aria-label="חזרה לשלב הקודם">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
       </button>
-      <button class="btn btn--teach" id="teach">
-        <span class="cmark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3.4"/><path d="M12 2.6v2.4M12 19v2.4M4.3 4.3 6 6M18 18l1.7 1.7M2.6 12H5M19 12h2.4M4.3 19.7 6 18M18 6l1.7-1.7"/></svg>
-        </span>
-        <span id="teachLabel">לחשוב יחד</span>
-      </button>
       <button class="btn btn--primary nav__next" id="next">הבא</button>
     </div>
   </nav>
-</div>
-
-<div class="tsheet" id="tsheet">
-  <div class="tsheet__panel" role="dialog" aria-modal="true" aria-label="המלווה">
-    <div class="tsheet__head">
-      <span class="cmark cmark--lg" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3.4"/><path d="M12 2.6v2.4M12 19v2.4M4.3 4.3 6 6M18 18l1.7 1.7M2.6 12H5M19 12h2.4M4.3 19.7 6 18M18 6l1.7-1.7"/></svg>
-      </span>
-      <div>
-        <div class="tsheet__name" id="tName">המלווה</div>
-        <div class="tsheet__role" id="tRole">לא נותנת תשובות, עוזרת לך להגיע אליהן</div>
-      </div>
-      <button class="tsheet__x" id="tclose" aria-label="סגירה">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <div class="tlog" id="tlog"></div>
-    <div class="tsug" id="tsug"></div>
-    <form class="tform" id="tform">
-      <textarea id="tinput" rows="1" placeholder="על מה נחשוב יחד?" aria-label="הודעה למלווה"></textarea>
-      <button type="submit" id="tsend" aria-label="שליחה">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-      </button>
-    </form>
-    <div class="tnote" id="tnote"></div>
-  </div>
 </div>
 
 <div class="toast" id="toast"></div>
